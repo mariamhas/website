@@ -44,6 +44,8 @@ import 'src/pages/news_page.dart';
 import 'src/pages/not_found_page.dart';
 import 'src/pages/showcase_page.dart';
 import 'src/pages/web_page.dart';
+import 'src/pages/flutterbench_page.dart';
+import 'src/pages/flutterbench_header.dart';
 import 'src/pages/why_flutter_page.dart';
 import 'src/utils/asset_utils.dart';
 
@@ -130,6 +132,11 @@ void main() {
           defineComponent('FlipPage', const FlipPage()),
           defineComponent('NewsPage', const NewsPage()),
           defineComponent('WhyFlutterPage', const WhyFlutterPage()),
+          defineComponent('FlutterBenchPage', const FlutterBenchPage()),
+          defineComponentWithAttrs(
+            'FlutterBenchHeader',
+            FlutterBenchHeader.fromAttrs,
+          ),
           defineComponentWithAttrs('Image', Image.fromAttrs),
 
           CustomComponent(

@@ -31,6 +31,8 @@ import 'package:flutter_website/src/components/sections/why_flutter_features_sec
     as _why_flutter_features_section;
 import 'package:flutter_website/src/components/sections/why_flutter_hero_section.dart'
     as _why_flutter_hero_section;
+import 'package:flutter_website/src/pages/flutterbench_interactive.dart'
+    as _flutterbench_interactive;
 import 'package:jaspr_content/components/file_tree.dart' as _file_tree;
 import 'package:site_shared/components/blog/client/blog_categories.dart'
     as _blog_categories;
@@ -123,6 +125,11 @@ ServerOptions get defaultServerOptions => ServerOptions(
           'why_flutter_hero_section',
           params: __why_flutter_hero_sectionWhyFlutterHeroSection,
         ),
+    _flutterbench_interactive.FlutterBenchInteractive:
+        ClientTarget<_flutterbench_interactive.FlutterBenchInteractive>(
+          'flutterbench_interactive',
+          params: __flutterbench_interactiveFlutterBenchInteractive,
+        ),
     _blog_categories.BlogCategories:
         ClientTarget<_blog_categories.BlogCategories>(
           'site_shared:blog_categories',
@@ -203,6 +210,9 @@ Map<String, Object?> __why_flutter_hero_sectionWhyFlutterHeroSection(
   'whitepaperUrl': c.whitepaperUrl,
   'flutterLogo': c.flutterLogo,
 };
+Map<String, Object?> __flutterbench_interactiveFlutterBenchInteractive(
+  _flutterbench_interactive.FlutterBenchInteractive c,
+) => {'rawRunsJson': c.rawRunsJson};
 Map<String, Object?> __blog_categoriesBlogCategories(
   _blog_categories.BlogCategories c,
 ) => {'categories': c.categories.map((i) => i.toMap()).toList()};
