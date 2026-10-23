@@ -44,7 +44,6 @@ class BenchSubnav extends StatelessComponent {
   }) {
     return a(
       href: href,
-      target: '_self',
       classes: 'bench-subnav-tab ${isActive ? 'active' : ''}',
       [.text(label)],
     );

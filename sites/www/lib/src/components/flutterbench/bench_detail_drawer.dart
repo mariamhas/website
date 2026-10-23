@@ -36,6 +36,11 @@ class BenchDetailDrawer extends StatelessComponent {
     }
 
     final currentEntry = entry!;
+    final showBoth = variant == DisplayVariant.both &&
+        currentEntry.baselineRun != null &&
+        currentEntry.aiToolingRun != null;
+    final baselineMetrics = currentEntry.baselineMetrics;
+    final aiToolingMetrics = currentEntry.aiToolingMetrics;
     final activeMetrics = _resolveActiveMetrics(currentEntry);
     final activeTasks = _resolveActiveTasks(currentEntry);
 
@@ -69,62 +74,180 @@ class BenchDetailDrawer extends StatelessComponent {
         div(classes: 'drawer-body', [
           // Section 1: Summary Top-level Metrics
           const h3(classes: 'section-heading', [.text('Performance Overview')]),
-          div(classes: 'metric-cards-grid', [
-            _buildSummaryCard(
-              label: 'Pass Rate',
-              value: BenchCalculator.formatPercent(activeMetrics.passRate),
-            ),
-            _buildSummaryCard(
-              label: 'Pass@4 Rate',
-              value: BenchCalculator.formatPercent(activeMetrics.passAt4Rate),
-            ),
-            _buildSummaryCard(
-              label: 'Avg Score',
-              value: BenchCalculator.formatScoreWithSd(
-                activeMetrics.avgScore,
-                activeMetrics.scoreSd,
+          if (showBoth) ...[
+            // Both mode: show baseline and AI tooling side by side
+            div(classes: 'both-metrics-section', [
+              div(classes: 'both-metrics-column', [
+                const div(classes: 'both-metrics-label baseline-label', [
+                  .text('Baseline'),
+                ]),
+                div(classes: 'metric-cards-grid', [
+                  _buildSummaryCard(
+                    label: 'Pass Rate',
+                    value: BenchCalculator.formatPercent(
+                      baselineMetrics.passRate,
+                    ),
+                  ),
+                  _buildSummaryCard(
+                    label: 'Pass@4',
+                    value: BenchCalculator.formatPercent(
+                      baselineMetrics.passAt4Rate,
+                    ),
+                  ),
+                  _buildSummaryCard(
+                    label: 'Avg Score',
+                    value: BenchCalculator.formatScoreWithSd(
+                      baselineMetrics.avgScore,
+                      baselineMetrics.scoreSd,
+                    ),
+                  ),
+                  _buildSummaryCard(
+                    label: 'Avg Tokens',
+                    value: BenchCalculator.formatTokens(
+                      baselineMetrics.avgTokens,
+                    ),
+                  ),
+                  _buildSummaryCard(
+                    label: 'Avg Cost',
+                    value: BenchCalculator.formatCost(baselineMetrics.avgCost),
+                  ),
+                ]),
+              ]),
+              div(classes: 'both-metrics-column', [
+                const div(classes: 'both-metrics-label ai-label', [
+                  .text('With AI Tooling'),
+                ]),
+                div(classes: 'metric-cards-grid', [
+                  _buildSummaryCard(
+                    label: 'Pass Rate',
+                    value: BenchCalculator.formatPercent(
+                      aiToolingMetrics.passRate,
+                    ),
+                  ),
+                  _buildSummaryCard(
+                    label: 'Pass@4',
+                    value: BenchCalculator.formatPercent(
+                      aiToolingMetrics.passAt4Rate,
+                    ),
+                  ),
+                  _buildSummaryCard(
+                    label: 'Avg Score',
+                    value: BenchCalculator.formatScoreWithSd(
+                      aiToolingMetrics.avgScore,
+                      aiToolingMetrics.scoreSd,
+                    ),
+                  ),
+                  _buildSummaryCard(
+                    label: 'Avg Tokens',
+                    value: BenchCalculator.formatTokens(
+                      aiToolingMetrics.avgTokens,
+                    ),
+                  ),
+                  _buildSummaryCard(
+                    label: 'Avg Cost',
+                    value: BenchCalculator.formatCost(aiToolingMetrics.avgCost),
+                  ),
+                ]),
+              ]),
+            ]),
+          ] else ...[
+            div(classes: 'metric-cards-grid', [
+              _buildSummaryCard(
+                label: 'Pass Rate',
+                value: BenchCalculator.formatPercent(activeMetrics.passRate),
               ),
-            ),
-            _buildSummaryCard(
-              label: 'Avg Tokens',
-              value: BenchCalculator.formatTokens(activeMetrics.avgTokens),
-            ),
-            _buildSummaryCard(
-              label: 'Avg Cost',
-              value: BenchCalculator.formatCost(activeMetrics.avgCost),
-            ),
-          ]),
+              _buildSummaryCard(
+                label: 'Pass@4 Rate',
+                value: BenchCalculator.formatPercent(activeMetrics.passAt4Rate),
+              ),
+              _buildSummaryCard(
+                label: 'Avg Score',
+                value: BenchCalculator.formatScoreWithSd(
+                  activeMetrics.avgScore,
+                  activeMetrics.scoreSd,
+                ),
+              ),
+              _buildSummaryCard(
+                label: 'Avg Tokens',
+                value: BenchCalculator.formatTokens(activeMetrics.avgTokens),
+              ),
+              _buildSummaryCard(
+                label: 'Avg Cost',
+                value: BenchCalculator.formatCost(activeMetrics.avgCost),
+              ),
+            ]),
+          ],
 
-          // Section 2: Outcome / Quality / DX Breakdown (Android Bench Style)
+          // Section 2: Outcome / Quality / DX Breakdown
           const h3(classes: 'section-heading', [
             .text('Result Score Breakdown (60% / 30% / 10%)'),
           ]),
-          div(classes: 'breakdown-cards-grid', [
-            div(classes: 'breakdown-card', [
-              const span(classes: 'pill-label pill-outcome', [
-                .text('Outcome (60%)'),
+          if (showBoth) ...[
+            div(classes: 'both-metrics-section', [
+              div(classes: 'both-metrics-column', [
+                const div(classes: 'both-metrics-label baseline-label', [
+                  .text('Baseline'),
+                ]),
+                div(classes: 'breakdown-cards-grid', [
+                  _buildBreakdownCard(
+                    'Outcome (60%)',
+                    'pill-outcome',
+                    BenchCalculator.formatPercent(baselineMetrics.avgOutcome),
+                  ),
+                  _buildBreakdownCard(
+                    'Quality (30%)',
+                    'pill-quality',
+                    BenchCalculator.formatPercent(baselineMetrics.avgQuality),
+                  ),
+                  _buildBreakdownCard(
+                    'Dev Experience (10%)',
+                    'pill-dx',
+                    BenchCalculator.formatPercent(baselineMetrics.avgDx),
+                  ),
+                ]),
               ]),
-              span(classes: 'large-value', [
-                .text(BenchCalculator.formatPercent(activeMetrics.avgOutcome)),
+              div(classes: 'both-metrics-column', [
+                const div(classes: 'both-metrics-label ai-label', [
+                  .text('With AI Tooling'),
+                ]),
+                div(classes: 'breakdown-cards-grid', [
+                  _buildBreakdownCard(
+                    'Outcome (60%)',
+                    'pill-outcome',
+                    BenchCalculator.formatPercent(aiToolingMetrics.avgOutcome),
+                  ),
+                  _buildBreakdownCard(
+                    'Quality (30%)',
+                    'pill-quality',
+                    BenchCalculator.formatPercent(aiToolingMetrics.avgQuality),
+                  ),
+                  _buildBreakdownCard(
+                    'Dev Experience (10%)',
+                    'pill-dx',
+                    BenchCalculator.formatPercent(aiToolingMetrics.avgDx),
+                  ),
+                ]),
               ]),
             ]),
-            div(classes: 'breakdown-card', [
-              const span(classes: 'pill-label pill-quality', [
-                .text('Quality (30%)'),
-              ]),
-              span(classes: 'large-value', [
-                .text(BenchCalculator.formatPercent(activeMetrics.avgQuality)),
-              ]),
+          ] else ...[
+            div(classes: 'breakdown-cards-grid', [
+              _buildBreakdownCard(
+                'Outcome (60%)',
+                'pill-outcome',
+                BenchCalculator.formatPercent(activeMetrics.avgOutcome),
+              ),
+              _buildBreakdownCard(
+                'Quality (30%)',
+                'pill-quality',
+                BenchCalculator.formatPercent(activeMetrics.avgQuality),
+              ),
+              _buildBreakdownCard(
+                'Dev Experience (10%)',
+                'pill-dx',
+                BenchCalculator.formatPercent(activeMetrics.avgDx),
+              ),
             ]),
-            div(classes: 'breakdown-card', [
-              const span(classes: 'pill-label pill-dx', [
-                .text('Dev Experience (10%)'),
-              ]),
-              span(classes: 'large-value', [
-                .text(BenchCalculator.formatPercent(activeMetrics.avgDx)),
-              ]),
-            ]),
-          ]),
+          ],
 
           // Section 3: Per-task table
           const h3(classes: 'section-heading', [
@@ -204,6 +327,17 @@ class BenchDetailDrawer extends StatelessComponent {
     return div(classes: 'summary-metric-card', [
       span(classes: 'card-label', [.text(label)]),
       span(classes: 'card-value', [.text(value)]),
+    ]);
+  }
+
+  Component _buildBreakdownCard(
+    String label,
+    String pillClass,
+    String value,
+  ) {
+    return div(classes: 'breakdown-card', [
+      span(classes: 'pill-label $pillClass', [.text(label)]),
+      span(classes: 'large-value', [.text(value)]),
     ]);
   }
 }
