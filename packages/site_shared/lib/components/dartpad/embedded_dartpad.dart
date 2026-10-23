@@ -30,9 +30,9 @@ final class EmbeddedDartPad extends StatefulComponent {
   /// the specified [iframeId] and [_iframeUrl].
   EmbeddedDartPad._({
     required this.iframeId,
-    required this._iframeUrl,
+    required String iframeUrl,
     required this.code,
-  });
+  }) : _iframeUrl = iframeUrl;
 
   /// Creates a new embedded DartPad element with the specified configuration.
   ///

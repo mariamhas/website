@@ -86,4 +86,18 @@ final List<NavItem> headerNavItems = [
       ),
     ],
   ),
+  NavItem(
+    label: 'Flutter Bench',
+    href: '/flutterbench',
+    items: [
+      NavLink(
+        label: 'Methodology',
+        href: '/flutterbench/methodology',
+      ),
+      NavLink(
+        label: 'Archive',
+        href: '/flutterbench/archive',
+      ),
+    ],
+  ),
 ];

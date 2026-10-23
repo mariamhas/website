@@ -36,6 +36,8 @@ import 'package:flutter_website/src/components/sections/why_flutter_hero_section
     deferred as _why_flutter_hero_section;
 import 'package:flutter_website/src/models/content/banner_content.dart'
     as _banner_content;
+import 'package:flutter_website/src/pages/flutterbench_interactive.dart'
+    deferred as _flutterbench_interactive;
 import 'package:site_shared/components/blog/client/blog_categories.dart'
     deferred as _blog_categories;
 import 'package:site_shared/components/blog/client/share_button.dart'
@@ -188,6 +190,14 @@ ClientOptions get defaultClientOptions => ClientOptions(
         flutterLogo: p['flutterLogo'] as String,
       ),
       loader: _why_flutter_hero_section.loadLibrary,
+    ),
+    'flutterbench_interactive': ClientLoader(
+      (p) => _flutterbench_interactive.FlutterBenchInteractive(
+        rawRunsJson: (p['rawRunsJson'] as List<Object?>)
+            .map((i) => (i as Map<String, Object?>))
+            .toList(),
+      ),
+      loader: _flutterbench_interactive.loadLibrary,
     ),
     'site_shared:blog_categories': ClientLoader(
       (p) => _blog_categories.BlogCategories(
