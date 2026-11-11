@@ -1,6 +1,6 @@
-// Copyright 2026, the Flutter authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that
-// can be found in the LICENSE file.
+// Copyright 2026, the Flutter authors. All rights reserved. Use of this source
+// code is governed by a BSD-style license that can be found in the LICENSE
+// file.
 
 import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
@@ -8,7 +8,7 @@ import 'package:jaspr/jaspr.dart';
 /// Available toggle view states for Flutter Bench.
 enum DisplayVariant {
   baseline('baseline', 'Baseline'),
-  aiTooling('ai_tooling', 'With AI tooling'),
+  enhanced('enhanced', 'Enhanced'),
   both('both', 'Both');
 
   final String id;
@@ -17,7 +17,8 @@ enum DisplayVariant {
   const DisplayVariant(this.id, this.label);
 }
 
-/// Controls bar hosting top-left search/select filters and top-right 3-segment variant toggle.
+/// Controls bar hosting top-left search/select filters and top-right 3-segment
+/// variant toggle.
 class BenchControls extends StatelessComponent {
   const BenchControls({
     required this.selectedAgent,
@@ -62,7 +63,7 @@ class BenchControls extends StatelessComponent {
               option(
                 value: '',
                 selected: selectedAgent == null || selectedAgent!.isEmpty,
-                [.text('All Agents')],
+                const [.text('All Agents')],
               ),
               for (final agent in availableAgents)
                 option(
@@ -84,7 +85,7 @@ class BenchControls extends StatelessComponent {
               option(
                 value: '',
                 selected: selectedModel == null || selectedModel!.isEmpty,
-                [.text('All Models')],
+                const [.text('All Models')],
               ),
               for (final model in availableModels)
                 option(
@@ -99,20 +100,43 @@ class BenchControls extends StatelessComponent {
           button(
             classes: 'bench-clear-btn',
             events: events(onClick: onClearFilters),
-            [.text('✕ Clear filters')],
+            const [.text('✕ Clear filters')],
           ),
       ]),
 
       // Top-right 3-segment variant toggle
-      div(classes: 'bench-variant-toggle', [
-        for (final variant in DisplayVariant.values)
-          button(
-            classes:
-                'toggle-segment ${selectedVariant == variant ? 'active' : ''}',
-            events: events(onClick: () => onVariantChanged(variant)),
-            [.text(variant.label)],
-          ),
-      ]),
+      BenchVariantToggle(
+        selectedVariant: selectedVariant,
+        onVariantChanged: onVariantChanged,
+      ),
+    ]);
+  }
+}
+
+/// A 3-segment toggle for switching between [DisplayVariant] values.
+///
+/// Used in both the leaderboard controls bar and the detail drawer.
+class BenchVariantToggle extends StatelessComponent {
+  const BenchVariantToggle({
+    required this.selectedVariant,
+    required this.onVariantChanged,
+    super.key,
+  });
+
+  final DisplayVariant selectedVariant;
+  final ValueChanged<DisplayVariant> onVariantChanged;
+
+  @override
+  Component build(BuildContext context) {
+    return div(classes: 'bench-variant-toggle', [
+      for (final variant in DisplayVariant.values)
+        button(
+          classes:
+              'toggle-segment ${selectedVariant == variant ? 'active' : ''}',
+          attributes: {'aria-pressed': '${selectedVariant == variant}'},
+          events: events(onClick: () => onVariantChanged(variant)),
+          [.text(variant.label)],
+        ),
     ]);
   }
 }

@@ -3,6 +3,7 @@
 // can be found in the LICENSE file.
 
 @use '../core/breakpoints';
+@use 'flutterbench-shared' as bench;
 
 .flutterbench-page {
   padding-block: var(--spacer-lg) var(--spacer-xl);
@@ -25,6 +26,12 @@
       color: var(--grey-6);
       line-height: 1.5;
       max-width: 820px;
+    }
+
+    .bench-snapshot-meta {
+      margin-top: var(--spacer-xs);
+      font-size: 0.875rem;
+      color: var(--grey-6);
     }
   }
 
@@ -124,45 +131,43 @@
         }
       }
     }
+  }
 
-    .bench-variant-toggle {
-      display: inline-flex;
-      background: var(--grey-2);
-      border: 1px solid var(--ui-border-color);
-      border-radius: var(--ui-border-radius-sm);
-      padding: 3px;
-      gap: 2px;
+  // Shared by the controls bar and the detail drawer.
+  .bench-variant-toggle {
+    display: inline-flex;
+    background: var(--grey-2);
+    border: 1px solid var(--ui-border-color);
+    border-radius: var(--ui-border-radius-sm);
+    padding: 3px;
+    gap: 2px;
 
-      button.toggle-segment {
-        border: none;
-        background: transparent;
-        padding: 7px 16px;
-        border-radius: calc(var(--ui-border-radius-sm) - 2px);
-        font-family: var(--font-ui);
-        font-size: 13px;
-        font-weight: var(--font-weight-bold);
-        color: var(--grey-6);
-        cursor: pointer;
-        transition: all 200ms ease;
+    button.toggle-segment {
+      border: none;
+      background: transparent;
+      padding: 7px 16px;
+      border-radius: calc(var(--ui-border-radius-sm) - 2px);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: var(--font-weight-bold);
+      color: var(--grey-6);
+      cursor: pointer;
+      transition: all 200ms ease;
 
-        &:hover:not(.active) {
-          color: var(--blue-9);
-        }
+      &:hover:not(.active) {
+        color: var(--blue-9);
+      }
 
-        &.active {
-          background: #ffffff;
-          color: var(--blue-6);
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-        }
+      &.active {
+        background: #ffffff;
+        color: var(--blue-6);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
       }
     }
   }
 
   .bench-table-card {
-    background: #ffffff;
-    border: 1px solid var(--ui-border-color);
-    border-radius: var(--ui-border-radius-sm);
-    box-shadow: var(--ui-drop-shadow-sm);
+    @include bench.card-surface($shadow: true);
     overflow: hidden;
     margin-bottom: var(--spacer-md);
 
@@ -183,11 +188,7 @@
         border-bottom: 2px solid var(--ui-border-color);
 
         th {
-          padding: 16px 20px;
-          font-family: var(--font-ui);
-          font-size: 13px;
-          font-weight: var(--font-weight-bold);
-          color: var(--blue-10);
+          @include bench.table-head-cell;
           white-space: nowrap;
           cursor: pointer;
           user-select: none;
@@ -252,88 +253,83 @@
                 color: var(--blue-9);
               }
             }
-
-            .both-cell-container {
-              display: flex;
-              flex-direction: column;
-              gap: 4px;
-              align-items: flex-end;
-
-              .variant-item {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                font-size: 13px;
-
-                .variant-badge {
-                  font-size: 10px;
-                  font-weight: var(--font-weight-bold);
-                  padding: 2px 6px;
-                  border-radius: 4px;
-                  text-transform: uppercase;
-
-                  &.badge-baseline {
-                    background: var(--grey-3);
-                    color: var(--grey-6);
-                  }
-
-                  &.badge-ai {
-                    background: var(--blue-2);
-                    color: var(--blue-8);
-                  }
-                }
-              }
-
-              .delta-badge {
-                font-size: 11px;
-                font-weight: var(--font-weight-bold);
-                padding: 1px 6px;
-                border-radius: 10px;
-
-                &.positive {
-                  background: var(--green-2);
-                  color: #0b695e;
-                }
-
-                &.negative {
-                  background: #ffd6d6;
-                  color: var(--red);
-                }
-
-                &.neutral {
-                  background: var(--grey-2);
-                  color: var(--grey-6);
-                }
-              }
-            }
           }
         }
       }
     }
   }
 
+  // Stacked "AI Tooling" / "Base" values used in Both mode by the
+  // leaderboard table and the detail drawer's per-task table.
+  .both-cell-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+
+    .variant-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+
+      .variant-badge {
+        font-size: 10px;
+        font-weight: var(--font-weight-bold);
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+
+        &.badge-baseline {
+          background: var(--grey-3);
+          color: var(--grey-6);
+        }
+
+        &.badge-ai {
+          background: var(--blue-2);
+          color: var(--blue-8);
+        }
+      }
+    }
+
+    .delta-badge {
+      font-size: 11px;
+      font-weight: var(--font-weight-bold);
+      padding: 1px 6px;
+      border-radius: 10px;
+
+      &.positive {
+        background: var(--green-2);
+        color: #0b695e;
+      }
+
+      &.negative {
+        background: #ffd6d6;
+        color: var(--red);
+      }
+
+      &.neutral {
+        background: var(--grey-2);
+        color: var(--grey-6);
+      }
+    }
+  }
+
   .bench-legend-card {
-    background: #ffffff;
-    border: 1px solid var(--ui-border-color);
-    border-radius: var(--ui-border-radius-sm);
+    // @include bench.card-surface;
+
     padding: 20px 24px;
     margin-bottom: var(--spacer-md);
 
     h4 {
-      font-family: var(--font-ui);
-      font-size: 15px;
-      font-weight: var(--font-weight-bold);
-      color: var(--blue-10);
+      @include bench.card-title;
       margin-bottom: 12px;
     }
 
-    ul.legend-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
+    ul {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 10px;
+      gap: 12px;
 
       @include breakpoints.screen(md) {
         grid-template-columns: 1fr 1fr;
@@ -345,16 +341,13 @@
         color: var(--grey-6);
 
         strong {
-          color: var(--blue-9);
+          color: var(--blue-7);
+          font-size: 1rem;
+          display:block;
         }
 
         code {
-          background: var(--grey-2);
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-family: var(--font-code);
-          font-size: 12px;
-          color: var(--blue-8);
+          @include bench.inline-code;
         }
       }
     }
@@ -380,10 +373,9 @@
       line-height: 1.6;
       color: var(--grey-6);
       margin-bottom: 14px;
-      max-width: 860px;
     }
 
-    .methodology-link {
+    a {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -422,7 +414,7 @@
     top: 0;
     right: 0;
     bottom: 0;
-    width: 720px;
+    width: 900px;
     max-width: 95vw;
     background: #ffffff;
     box-shadow: -6px 0 28px rgba(0, 0, 0, 0.18);
@@ -469,9 +461,8 @@
           margin: 0 0 4px 0;
         }
 
-        .drawer-variant-subtitle {
-          font-size: 13px;
-          color: var(--grey-5);
+        .drawer-variant-toggle {
+          margin-top: 8px;
         }
       }
 
@@ -525,11 +516,7 @@
           justify-content: space-between;
 
           .card-label {
-            font-size: 12px;
-            font-weight: var(--font-weight-bold);
-            color: var(--grey-5);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            @include bench.label;
             margin-bottom: 8px;
           }
 
@@ -563,25 +550,12 @@
 
           .pill-label {
             align-self: flex-start;
-            font-size: 11px;
-            font-weight: var(--font-weight-bold);
-            padding: 3px 10px;
-            border-radius: 12px;
-            text-transform: uppercase;
+            @include bench.pill;
 
-            &.pill-outcome {
-              background: var(--blue-2);
-              color: var(--blue-8);
-            }
-
-            &.pill-quality {
-              background: var(--green-2);
-              color: #0b695e;
-            }
-
-            &.pill-dx {
-              background: var(--violet-1);
-              color: var(--violet-3);
+            @each $category in (outcome, quality, dx) {
+              &.pill-#{$category} {
+                @include bench.category-tint($category);
+              }
             }
           }
 
@@ -654,6 +628,7 @@
           }
         }
       }
+
       // "Both" mode side-by-side layout
       .both-metrics-section {
         display: grid;
@@ -707,6 +682,7 @@
 // header is styled for readability.
 body.flutterbench-methodology,
 body.flutterbench-archive {
+
   // Reset section.content to full width so the header/subnav
   // position matches the leaderboard page exactly.
   section.content {
@@ -722,50 +698,54 @@ body.flutterbench-archive {
   // Prose content (h2, p, ul, etc.) sits directly inside section.content
   // as siblings after the .flutterbench-page div.
   // Constrain them to the same container width as the leaderboard table.
-  section.content > :not(.flutterbench-page) {
+  section.content> :not(.flutterbench-page) {
     width: calc(100% - (var(--gutter-sm) * 2));
     margin-left: auto;
     margin-right: auto;
     max-width: var(--max-width);
     padding-bottom: 0;
-    color: var(--site-base-fgColor);
-    line-height: 1.75;
+    font-family: var(--font-body);
+    color: bench.$text-color;
+    line-height: 1.6;
 
     h2 {
-      font-size: 1.5rem;
+      font-size: var(--font-size-heading-3);
       font-weight: var(--font-weight-bolder);
       margin-top: 2.5rem;
       margin-bottom: 0.75rem;
-      color: var(--grey-10);
+      color: bench.$heading-color;
       letter-spacing: -0.01em;
     }
 
     h3 {
-      font-size: 1.2rem;
+      font-size: var(--font-size-heading-4);
       font-weight: var(--font-weight-bold);
       margin-top: 2rem;
       margin-bottom: 0.5rem;
-      color: var(--grey-9);
+      color: bench.$heading-color;
     }
 
     h4 {
-      font-size: 1.05rem;
+      font-size: var(--font-size-heading-5);
       font-weight: var(--font-weight-bold);
       margin-top: 1.5rem;
       margin-bottom: 0.5rem;
-      color: var(--grey-8);
+      color: bench.$heading-color;
     }
 
     p {
       margin-bottom: 1.25rem;
-      line-height: 1.75;
-      color: var(--grey-7);
+      font-size: var(--font-size-heading-5);
+      line-height: 1.6;
+      color: bench.$text-color;
     }
 
     a {
-      color: var(--site-primary-color);
+      color: bench.$link-color;
+      text-decoration: none;
 
       &:hover {
+        color: bench.$link-hover-color;
         text-decoration: underline;
       }
     }
@@ -777,8 +757,9 @@ body.flutterbench-archive {
 
       li {
         margin-bottom: 0.5rem;
-        line-height: 1.7;
-        color: var(--grey-7);
+        font-size: var(--font-size-heading-5);
+        line-height: 1.6;
+        color: bench.$text-color;
       }
     }
 
@@ -788,41 +769,25 @@ body.flutterbench-archive {
       border-top: 1px solid var(--ui-border-color);
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 1.5rem;
-      font-size: 0.875rem;
+    // Markdown tables render as leaderboard-style table cards.
+    .table-wrapper {
+      @include bench.card-surface($shadow: true);
+      overflow-x: auto;
+      margin-bottom: var(--spacer-md);
 
-      th,
-      td {
-        text-align: left;
-        padding: 10px 12px;
-        border-bottom: 1px solid var(--ui-border-color);
-      }
-
-      th {
-        font-weight: var(--font-weight-bold);
-        color: var(--grey-8);
-        background: var(--grey-1);
-      }
-
-      td {
-        color: var(--grey-7);
+      table {
+        @include bench.table;
+        margin: 0;
       }
     }
 
     code {
-      font-size: 0.875em;
-      padding: 2px 6px;
-      background: var(--grey-1);
-      border-radius: 4px;
-      color: var(--grey-8);
+      @include bench.inline-code;
     }
 
     strong {
       font-weight: var(--font-weight-bold);
-      color: var(--grey-9);
+      color: bench.$strong-color;
     }
   }
 }

@@ -10,6 +10,10 @@ import 'package:flutter_website/src/components/common/carousel.dart'
 import 'package:flutter_website/src/components/common/newsletter_form.dart'
     as _newsletter_form;
 import 'package:flutter_website/src/components/common/tabs.dart' as _tabs;
+import 'package:flutter_website/src/components/flutterbench/flutterbench_interactive.dart'
+    as _flutterbench_interactive;
+import 'package:flutter_website/src/components/flutterbench/interactive_detail_card.dart'
+    as _interactive_detail_card;
 import 'package:flutter_website/src/components/layout/header.dart' as _header;
 import 'package:flutter_website/src/components/pages/consultants_cookie_snack.dart'
     as _consultants_cookie_snack;
@@ -31,8 +35,6 @@ import 'package:flutter_website/src/components/sections/why_flutter_features_sec
     as _why_flutter_features_section;
 import 'package:flutter_website/src/components/sections/why_flutter_hero_section.dart'
     as _why_flutter_hero_section;
-import 'package:flutter_website/src/pages/flutterbench_interactive.dart'
-    as _flutterbench_interactive;
 import 'package:jaspr_content/components/file_tree.dart' as _file_tree;
 import 'package:site_shared/components/blog/client/blog_categories.dart'
     as _blog_categories;
@@ -73,6 +75,16 @@ ServerOptions get defaultServerOptions => ServerOptions(
     _newsletter_form.NewsletterForm:
         ClientTarget<_newsletter_form.NewsletterForm>('newsletter_form'),
     _tabs.Tabs: ClientTarget<_tabs.Tabs>('tabs', params: __tabsTabs),
+    _flutterbench_interactive.FlutterBenchInteractive:
+        ClientTarget<_flutterbench_interactive.FlutterBenchInteractive>(
+          'flutterbench_interactive',
+          params: __flutterbench_interactiveFlutterBenchInteractive,
+        ),
+    _interactive_detail_card.InteractiveDetailCard:
+        ClientTarget<_interactive_detail_card.InteractiveDetailCard>(
+          'interactive_detail_card',
+          params: __interactive_detail_cardInteractiveDetailCard,
+        ),
     _header.Header: ClientTarget<_header.Header>(
       'header',
       params: __headerHeader,
@@ -125,11 +137,6 @@ ServerOptions get defaultServerOptions => ServerOptions(
           'why_flutter_hero_section',
           params: __why_flutter_hero_sectionWhyFlutterHeroSection,
         ),
-    _flutterbench_interactive.FlutterBenchInteractive:
-        ClientTarget<_flutterbench_interactive.FlutterBenchInteractive>(
-          'flutterbench_interactive',
-          params: __flutterbench_interactiveFlutterBenchInteractive,
-        ),
     _blog_categories.BlogCategories:
         ClientTarget<_blog_categories.BlogCategories>(
           'site_shared:blog_categories',
@@ -172,6 +179,17 @@ Map<String, Object?> __tabsTabs(_tabs.Tabs c) => {
   'tabs': c.tabs.map((i) => i.toMap()).toList(),
   'noSpy': c.noSpy,
 };
+Map<String, Object?> __flutterbench_interactiveFlutterBenchInteractive(
+  _flutterbench_interactive.FlutterBenchInteractive c,
+) => {'rawResultsJson': c.rawResultsJson};
+Map<String, Object?> __interactive_detail_cardInteractiveDetailCard(
+  _interactive_detail_card.InteractiveDetailCard c,
+) => {
+  'title': c.title,
+  'description': c.description,
+  'tabs': c.tabs,
+  'classes': c.classes,
+};
 Map<String, Object?> __headerHeader(_header.Header c) => {
   'contrastLogoSrc': c.contrastLogoSrc,
   'defaultLogoSrc': c.defaultLogoSrc,
@@ -210,9 +228,6 @@ Map<String, Object?> __why_flutter_hero_sectionWhyFlutterHeroSection(
   'whitepaperUrl': c.whitepaperUrl,
   'flutterLogo': c.flutterLogo,
 };
-Map<String, Object?> __flutterbench_interactiveFlutterBenchInteractive(
-  _flutterbench_interactive.FlutterBenchInteractive c,
-) => {'rawRunsJson': c.rawRunsJson};
 Map<String, Object?> __blog_categoriesBlogCategories(
   _blog_categories.BlogCategories c,
 ) => {'categories': c.categories.map((i) => i.toMap()).toList()};

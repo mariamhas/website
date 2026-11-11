@@ -5,51 +5,65 @@
 import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 
-import '../../models/flutterbench/bench_models.dart';
-import '../../utils/bench_calculator.dart';
+import '../../models/content/flutter_bench.dart';
+import '../../utils/bench_format.dart';
 import 'bench_controls.dart';
 
 /// Slide-over detail drawer for in-depth inspection of a selected model/agent run.
 ///
 /// Displays:
 /// 1. Top-level metric summary cards.
-/// 2. Outcome (60%) / Quality (30%) / DX (10%) breakdown cards (Android Bench pattern).
+/// 2. Outcome / Quality breakdown cards, weighted by the snapshot's scoring.
 /// 3. Per-task breakdown table respecting the active variant.
+///
+/// The header includes a [BenchVariantToggle] so the variant can be
+/// changed without closing the drawer.
 class BenchDetailDrawer extends StatelessComponent {
   const BenchDetailDrawer({
     required this.entry,
+    required this.snapshot,
     required this.variant,
     required this.isOpen,
     required this.onClose,
+    required this.onVariantChanged,
     super.key,
   });
 
   final BenchComparisonEntry? entry;
+
+  /// Snapshot metadata, used for the Pass@K label and scoring weights.
+  final BenchSnapshot snapshot;
+
   final DisplayVariant variant;
   final bool isOpen;
   final VoidCallback onClose;
+  final ValueChanged<DisplayVariant> onVariantChanged;
+
+  int get _k => snapshot.trialsPerTask;
+  BenchScoring get _scoring => snapshot.scoring;
 
   @override
   Component build(BuildContext context) {
-    if (entry == null) {
-      return div(classes: 'bench-drawer-backdrop', []);
+    final currentEntry = entry;
+    if (currentEntry == null) {
+      return const div(classes: 'bench-drawer-backdrop', []);
     }
 
-    final currentEntry = entry!;
-    final showBoth = variant == DisplayVariant.both &&
+    final showBoth =
+        variant == DisplayVariant.both &&
         currentEntry.baselineRun != null &&
-        currentEntry.aiToolingRun != null;
-    final baselineMetrics = currentEntry.baselineMetrics;
-    final aiToolingMetrics = currentEntry.aiToolingMetrics;
-    final activeMetrics = _resolveActiveMetrics(currentEntry);
-    final activeTasks = _resolveActiveTasks(currentEntry);
+        currentEntry.enhancedRun != null;
+    final activeMetrics = currentEntry.metricsFor(
+      _resolveActiveVariant(currentEntry),
+    );
+    final taskRows = _resolveTaskRows(currentEntry, showBoth: showBoth);
 
     return div(classes: 'bench-drawer-root', [
       // Backdrop overlay
       div(
         classes: 'bench-drawer-backdrop ${isOpen ? 'open' : ''}',
         events: events(onClick: onClose),
-        [],
+        const [],
       ),
 
       // Slide-over drawer panel
@@ -59,14 +73,17 @@ class BenchDetailDrawer extends StatelessComponent {
           div(classes: 'drawer-title-group', [
             span(classes: 'drawer-agent-badge', [.text(currentEntry.agent)]),
             h2(classes: 'drawer-model-title', [.text(currentEntry.model)]),
-            span(classes: 'drawer-variant-subtitle', [
-              .text('Viewing mode: ${variant.label}'),
+            div(classes: 'drawer-variant-toggle', [
+              BenchVariantToggle(
+                selectedVariant: variant,
+                onVariantChanged: onVariantChanged,
+              ),
             ]),
           ]),
           button(
             classes: 'drawer-close-btn',
             events: events(onClick: onClose),
-            [.text('✕')],
+            const [.text('✕')],
           ),
         ]),
 
@@ -74,180 +91,28 @@ class BenchDetailDrawer extends StatelessComponent {
         div(classes: 'drawer-body', [
           // Section 1: Summary Top-level Metrics
           const h3(classes: 'section-heading', [.text('Performance Overview')]),
-          if (showBoth) ...[
-            // Both mode: show baseline and AI tooling side by side
-            div(classes: 'both-metrics-section', [
-              div(classes: 'both-metrics-column', [
-                const div(classes: 'both-metrics-label baseline-label', [
-                  .text('Baseline'),
-                ]),
-                div(classes: 'metric-cards-grid', [
-                  _buildSummaryCard(
-                    label: 'Pass Rate',
-                    value: BenchCalculator.formatPercent(
-                      baselineMetrics.passRate,
-                    ),
-                  ),
-                  _buildSummaryCard(
-                    label: 'Pass@4',
-                    value: BenchCalculator.formatPercent(
-                      baselineMetrics.passAt4Rate,
-                    ),
-                  ),
-                  _buildSummaryCard(
-                    label: 'Avg Score',
-                    value: BenchCalculator.formatScoreWithSd(
-                      baselineMetrics.avgScore,
-                      baselineMetrics.scoreSd,
-                    ),
-                  ),
-                  _buildSummaryCard(
-                    label: 'Avg Tokens',
-                    value: BenchCalculator.formatTokens(
-                      baselineMetrics.avgTokens,
-                    ),
-                  ),
-                  _buildSummaryCard(
-                    label: 'Avg Cost',
-                    value: BenchCalculator.formatCost(baselineMetrics.avgCost),
-                  ),
-                ]),
-              ]),
-              div(classes: 'both-metrics-column', [
-                const div(classes: 'both-metrics-label ai-label', [
-                  .text('With AI Tooling'),
-                ]),
-                div(classes: 'metric-cards-grid', [
-                  _buildSummaryCard(
-                    label: 'Pass Rate',
-                    value: BenchCalculator.formatPercent(
-                      aiToolingMetrics.passRate,
-                    ),
-                  ),
-                  _buildSummaryCard(
-                    label: 'Pass@4',
-                    value: BenchCalculator.formatPercent(
-                      aiToolingMetrics.passAt4Rate,
-                    ),
-                  ),
-                  _buildSummaryCard(
-                    label: 'Avg Score',
-                    value: BenchCalculator.formatScoreWithSd(
-                      aiToolingMetrics.avgScore,
-                      aiToolingMetrics.scoreSd,
-                    ),
-                  ),
-                  _buildSummaryCard(
-                    label: 'Avg Tokens',
-                    value: BenchCalculator.formatTokens(
-                      aiToolingMetrics.avgTokens,
-                    ),
-                  ),
-                  _buildSummaryCard(
-                    label: 'Avg Cost',
-                    value: BenchCalculator.formatCost(aiToolingMetrics.avgCost),
-                  ),
-                ]),
-              ]),
-            ]),
-          ] else ...[
-            div(classes: 'metric-cards-grid', [
-              _buildSummaryCard(
-                label: 'Pass Rate',
-                value: BenchCalculator.formatPercent(activeMetrics.passRate),
-              ),
-              _buildSummaryCard(
-                label: 'Pass@4 Rate',
-                value: BenchCalculator.formatPercent(activeMetrics.passAt4Rate),
-              ),
-              _buildSummaryCard(
-                label: 'Avg Score',
-                value: BenchCalculator.formatScoreWithSd(
-                  activeMetrics.avgScore,
-                  activeMetrics.scoreSd,
-                ),
-              ),
-              _buildSummaryCard(
-                label: 'Avg Tokens',
-                value: BenchCalculator.formatTokens(activeMetrics.avgTokens),
-              ),
-              _buildSummaryCard(
-                label: 'Avg Cost',
-                value: BenchCalculator.formatCost(activeMetrics.avgCost),
-              ),
-            ]),
-          ],
+          if (showBoth)
+            _buildBothColumns(
+              currentEntry,
+              _buildSummaryCards,
+            )
+          else
+            _buildSummaryCards(activeMetrics),
 
-          // Section 2: Outcome / Quality / DX Breakdown
-          const h3(classes: 'section-heading', [
-            .text('Result Score Breakdown (60% / 30% / 10%)'),
+          // Section 2: Outcome / Quality Breakdown
+          h3(classes: 'section-heading', [
+            .text(
+              'Result Score Breakdown '
+              '(${_scoring.outcomePercent}% / ${_scoring.qualityPercent}%)',
+            ),
           ]),
-          if (showBoth) ...[
-            div(classes: 'both-metrics-section', [
-              div(classes: 'both-metrics-column', [
-                const div(classes: 'both-metrics-label baseline-label', [
-                  .text('Baseline'),
-                ]),
-                div(classes: 'breakdown-cards-grid', [
-                  _buildBreakdownCard(
-                    'Outcome (60%)',
-                    'pill-outcome',
-                    BenchCalculator.formatPercent(baselineMetrics.avgOutcome),
-                  ),
-                  _buildBreakdownCard(
-                    'Quality (30%)',
-                    'pill-quality',
-                    BenchCalculator.formatPercent(baselineMetrics.avgQuality),
-                  ),
-                  _buildBreakdownCard(
-                    'Dev Experience (10%)',
-                    'pill-dx',
-                    BenchCalculator.formatPercent(baselineMetrics.avgDx),
-                  ),
-                ]),
-              ]),
-              div(classes: 'both-metrics-column', [
-                const div(classes: 'both-metrics-label ai-label', [
-                  .text('With AI Tooling'),
-                ]),
-                div(classes: 'breakdown-cards-grid', [
-                  _buildBreakdownCard(
-                    'Outcome (60%)',
-                    'pill-outcome',
-                    BenchCalculator.formatPercent(aiToolingMetrics.avgOutcome),
-                  ),
-                  _buildBreakdownCard(
-                    'Quality (30%)',
-                    'pill-quality',
-                    BenchCalculator.formatPercent(aiToolingMetrics.avgQuality),
-                  ),
-                  _buildBreakdownCard(
-                    'Dev Experience (10%)',
-                    'pill-dx',
-                    BenchCalculator.formatPercent(aiToolingMetrics.avgDx),
-                  ),
-                ]),
-              ]),
-            ]),
-          ] else ...[
-            div(classes: 'breakdown-cards-grid', [
-              _buildBreakdownCard(
-                'Outcome (60%)',
-                'pill-outcome',
-                BenchCalculator.formatPercent(activeMetrics.avgOutcome),
-              ),
-              _buildBreakdownCard(
-                'Quality (30%)',
-                'pill-quality',
-                BenchCalculator.formatPercent(activeMetrics.avgQuality),
-              ),
-              _buildBreakdownCard(
-                'Dev Experience (10%)',
-                'pill-dx',
-                BenchCalculator.formatPercent(activeMetrics.avgDx),
-              ),
-            ]),
-          ],
+          if (showBoth)
+            _buildBothColumns(
+              currentEntry,
+              _buildBreakdownCards,
+            )
+          else
+            _buildBreakdownCards(activeMetrics),
 
           // Section 3: Per-task table
           const h3(classes: 'section-heading', [
@@ -262,37 +127,49 @@ class BenchDetailDrawer extends StatelessComponent {
                   const th(classes: 'num', [.text('Result Score')]),
                   const th(classes: 'num', [.text('Outcome')]),
                   const th(classes: 'num', [.text('Quality')]),
-                  const th(classes: 'num', [.text('DX')]),
+                  th(classes: 'num', [.text('Passed / $_k')]),
+                  const th(classes: 'num', [.text('Avg Tokens')]),
                 ]),
               ]),
               tbody([
-                for (final task in activeTasks)
+                if (taskRows.isEmpty)
+                  const tr([
+                    td(
+                      attributes: {'colspan': '7'},
+                      [.text('No results yet for this agent and model.')],
+                    ),
+                  ]),
+                for (final row in taskRows)
                   tr([
-                    td([strong([.text(task.name)])]),
                     td([
-                      span(classes: 'category-tag ${task.category.value}', [
-                        .text(task.category.label),
+                      strong([.text(row.name)]),
+                    ]),
+                    td([
+                      span(classes: 'category-tag ${row.category.value}', [
+                        .text(row.category.label),
                       ]),
                     ]),
                     td(classes: 'num', [
-                      strong([
-                        .text(
-                          BenchCalculator.formatPercent(task.avgScore * 100),
-                        ),
-                      ]),
-                    ]),
-                    td(classes: 'num', [
-                      .text(
-                        BenchCalculator.formatPercent(task.avgOutcome * 100),
+                      _buildTaskCell(
+                        row,
+                        (m) => formatPercent(m.resultScore),
+                        bold: true,
                       ),
                     ]),
                     td(classes: 'num', [
-                      .text(
-                        BenchCalculator.formatPercent(task.avgQuality * 100),
+                      _buildTaskCell(row, (m) => formatPercent(m.outcome)),
+                    ]),
+                    td(classes: 'num', [
+                      _buildTaskCell(row, (m) => formatPercent(m.quality)),
+                    ]),
+                    td(classes: 'num', [
+                      _buildTaskCell(
+                        row,
+                        (m) => formatFraction(m.passedTrialCount, _k),
                       ),
                     ]),
                     td(classes: 'num', [
-                      .text(BenchCalculator.formatPercent(task.avgDx * 100)),
+                      _buildTaskCell(row, (m) => formatTokens(m.meanTokens)),
                     ]),
                   ]),
               ]),
@@ -303,24 +180,146 @@ class BenchDetailDrawer extends StatelessComponent {
     ]);
   }
 
-  AggregateMetrics _resolveActiveMetrics(BenchComparisonEntry currentEntry) {
-    switch (variant) {
-      case DisplayVariant.baseline:
-        return currentEntry.baselineMetrics;
-      case DisplayVariant.aiTooling:
-      case DisplayVariant.both:
-        return currentEntry.aiToolingMetrics;
+  /// The variant whose metrics are shown when not displaying both side by
+  /// side.
+  BenchVariant _resolveActiveVariant(BenchComparisonEntry currentEntry) =>
+      switch (variant) {
+        DisplayVariant.baseline => BenchVariant.baseline,
+        DisplayVariant.enhanced => BenchVariant.enhanced,
+        // Only used when one of the runs is missing,
+        // so fall back to whichever run exists.
+        DisplayVariant.both =>
+          currentEntry.enhancedRun != null
+              ? BenchVariant.enhanced
+              : BenchVariant.baseline,
+      };
+
+  /// Builds the per-task rows for the active variant.
+  ///
+  /// When [showBoth] is true, tasks from the two runs are paired by
+  /// [BenchTask.id] so each row shows baseline and enhanced together.
+  List<_TaskRow> _resolveTaskRows(
+    BenchComparisonEntry currentEntry, {
+    required bool showBoth,
+  }) {
+    final baselineTasks = currentEntry.baselineRun?.tasks ?? const [];
+    final enhancedTasks = currentEntry.enhancedRun?.tasks ?? const [];
+
+    if (showBoth) {
+      final baselineById = {for (final t in baselineTasks) t.id: t};
+      final enhancedIds = {for (final t in enhancedTasks) t.id};
+      return [
+        for (final enhanced in enhancedTasks)
+          _TaskRow(
+            baseline: baselineById[enhanced.id],
+            enhanced: enhanced,
+            paired: true,
+          ),
+        for (final base in baselineTasks)
+          if (!enhancedIds.contains(base.id))
+            _TaskRow(baseline: base, paired: true),
+      ];
     }
+
+    return switch (_resolveActiveVariant(currentEntry)) {
+      BenchVariant.baseline => [
+        for (final t in baselineTasks) _TaskRow(baseline: t),
+      ],
+      BenchVariant.enhanced => [
+        for (final t in enhancedTasks) _TaskRow(enhanced: t),
+      ],
+    };
   }
 
-  List<BenchTask> _resolveActiveTasks(BenchComparisonEntry currentEntry) {
-    switch (variant) {
-      case DisplayVariant.baseline:
-        return currentEntry.baselineRun?.tasks ?? const [];
-      case DisplayVariant.aiTooling:
-      case DisplayVariant.both:
-        return currentEntry.aiToolingRun?.tasks ?? const [];
+  /// Renders the baseline and enhanced columns side by side.
+  Component _buildBothColumns(
+    BenchComparisonEntry currentEntry,
+    Component Function(BenchRunMetrics? metrics) buildColumn,
+  ) {
+    return div(classes: 'both-metrics-section', [
+      div(classes: 'both-metrics-column', [
+        const div(classes: 'both-metrics-label baseline-label', [
+          .text('Baseline'),
+        ]),
+        buildColumn(currentEntry.baselineMetrics),
+      ]),
+      div(classes: 'both-metrics-column', [
+        const div(classes: 'both-metrics-label ai-label', [
+          .text('Enhanced'),
+        ]),
+        buildColumn(currentEntry.enhancedMetrics),
+      ]),
+    ]);
+  }
+
+  Component _buildSummaryCards(BenchRunMetrics? metrics) {
+    return div(classes: 'metric-cards-grid', [
+      _buildSummaryCard(
+        label: 'Pass Rate',
+        value: formatPercent(metrics?.passRate),
+      ),
+      _buildSummaryCard(
+        label: 'Pass@$_k Rate',
+        value: formatPercent(metrics?.passAtKRate),
+      ),
+      _buildSummaryCard(
+        label: 'Avg Score',
+        value: formatScoreWithSd(metrics?.avgScore, metrics?.scoreSd),
+      ),
+      _buildSummaryCard(
+        label: 'Avg Tokens',
+        value: formatTokens(metrics?.avgTokens),
+      ),
+      _buildSummaryCard(
+        label: 'Avg Cost',
+        value: formatCost(metrics?.avgCost),
+      ),
+    ]);
+  }
+
+  Component _buildBreakdownCards(BenchRunMetrics? metrics) {
+    return div(classes: 'breakdown-cards-grid', [
+      _buildBreakdownCard(
+        'Outcome (${_scoring.outcomePercent}%)',
+        'pill-outcome',
+        formatPercent(metrics?.avgOutcome),
+      ),
+      _buildBreakdownCard(
+        'Quality (${_scoring.qualityPercent}%)',
+        'pill-quality',
+        formatPercent(metrics?.avgQuality),
+      ),
+    ]);
+  }
+
+  /// Renders a per-task cell.
+  ///
+  /// Paired rows use the same stacked "Enhanced" / "Base" layout
+  /// as the leaderboard table's Both mode.
+  Component _buildTaskCell(
+    _TaskRow row,
+    String Function(BenchTaskMetrics) format, {
+    bool bold = false,
+  }) {
+    String formatTask(BenchTask? task) =>
+        task == null ? missingValue : format(task.metrics);
+
+    Component value(String text) => bold ? strong([.text(text)]) : .text(text);
+
+    if (!row.paired) {
+      return value(formatTask(row.enhanced ?? row.baseline));
     }
+
+    return div(classes: 'both-cell-container', [
+      div(classes: 'variant-item', [
+        const span(classes: 'variant-badge badge-ai', [.text('Enhanced')]),
+        span([value(formatTask(row.enhanced))]),
+      ]),
+      div(classes: 'variant-item', [
+        const span(classes: 'variant-badge badge-baseline', [.text('Base')]),
+        span([value(formatTask(row.baseline))]),
+      ]),
+    ]);
   }
 
   Component _buildSummaryCard({required String label, required String value}) {
@@ -340,4 +339,21 @@ class BenchDetailDrawer extends StatelessComponent {
       span(classes: 'large-value', [.text(value)]),
     ]);
   }
+}
+
+/// A row in the per-task table, holding a task from one or both variants.
+class _TaskRow {
+  const _TaskRow({this.baseline, this.enhanced, this.paired = false})
+    : assert(baseline != null || enhanced != null);
+
+  final BenchTask? baseline;
+  final BenchTask? enhanced;
+
+  /// Whether to render baseline and enhanced values side by side.
+  final bool paired;
+
+  BenchTask get _primary => (enhanced ?? baseline)!;
+
+  String get name => _primary.name;
+  TaskCategory get category => _primary.category;
 }
