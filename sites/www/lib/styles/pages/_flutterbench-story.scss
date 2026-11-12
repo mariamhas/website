@@ -1,0 +1,662 @@
+// Copyright 2026, the Flutter authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that
+// can be found in the LICENSE file.
+
+// Long-form Flutter Bench pages (methodology): numbered story chapters and
+// the cards ported from the FlutterBench methodology page in flutter/website.
+//
+// Visual tokens (surfaces, type, pills, code, tables) come from
+// _flutterbench-shared.scss so these elements match the leaderboard page.
+// Base prose styles for this page live in _flutterbench.scss.
+
+@use 'sass:color';
+@use 'sass:list';
+@use 'sass:map';
+@use 'flutterbench-shared' as bench;
+
+// -----------------------------------------------------------------------------
+// Tokens
+// -----------------------------------------------------------------------------
+$prose-max-width: 760px;
+$icon-size: 2.75rem;
+$accent-bar-width: 3px;
+$tint-bg: 0.12;
+$tint-border: 0.25;
+
+// Chapters cycle through hues already used on the leaderboard:
+// blue (--blue-6), teal (quality pill), violet (--violet-3),
+// and the short/long-horizon task tag colors.
+$chapter-colors: (#0468d7, #0b695e, #796ceb, #0369a1, #92400e);
+
+@function _pad-chapter-number($i) {
+  @if $i < 10 {
+    @return '0#{$i}';
+  }
+
+  @return '#{$i}';
+}
+
+// Returns a color's channels as "r, g, b" so it can be used in
+// `rgba(var(--chapter-accent-rgb), $alpha)`.
+@function _rgb-channels($c) {
+  $r: color.channel($c, 'red', $space: rgb);
+  $g: color.channel($c, 'green', $space: rgb);
+  $b: color.channel($c, 'blue', $space: rgb);
+  @return '#{$r}, #{$g}, #{$b}';
+}
+
+// Body text inside cards, matching leaderboard card copy (14px, grey-6).
+@mixin _card-body-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: bench.$text-color;
+  overflow-wrap: anywhere;
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  p {
+    margin: 0 0 var(--spacer-sm);
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+  }
+
+  ul,
+  ol {
+    margin: 0;
+    padding-left: 1.1rem;
+
+    li {
+      margin-bottom: 4px;
+      font-size: inherit;
+      line-height: inherit;
+      color: inherit;
+    }
+  }
+
+  strong {
+    color: bench.$strong-color;
+  }
+
+  code {
+    @include bench.inline-code;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Chapter layout
+// -----------------------------------------------------------------------------
+// Nested under the same selector as the base prose styles in
+// _flutterbench.scss so these rules take precedence.
+body.flutterbench-methodology section.content {
+  ul {
+    // Overwrite the global style that turns off list-style.
+    list-style: disc !important;
+  }
+
+  .story-chapter {
+    position: relative;
+    padding-block: var(--gutter);
+
+    // Default accent colors, overridden per chapter below.
+    --chapter-accent: #{list.nth($chapter-colors, 1)};
+    --chapter-accent-rgb: #{_rgb-channels(list.nth($chapter-colors, 1))};
+    --chapter-next-rgb: #{_rgb-channels(list.nth($chapter-colors, 2))};
+
+    @for $i from 0 through 20 {
+      $curr: list.nth($chapter-colors, ($i % list.length($chapter-colors)) + 1);
+      $next: list.nth($chapter-colors, (($i + 1) % list.length($chapter-colors)) + 1);
+
+      &[data-chapter='#{_pad-chapter-number($i)}'] {
+        --chapter-accent: #{$curr};
+        --chapter-accent-rgb: #{_rgb-channels($curr)};
+        --chapter-next-rgb: #{_rgb-channels($next)};
+      }
+    }
+
+    // Ambient tint that blends from this chapter's accent into the next.
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0 calc(-1 * var(--spacer-md));
+      // background:
+      //   radial-gradient(1250px circle at 50% 0%, rgba(var(--chapter-accent-rgb), $tint-bg), transparent 30%),
+      //   radial-gradient(1250px circle at 50% 100%, rgba(var(--chapter-next-rgb), $tint-bg), transparent 30%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    &:first-of-type {
+      padding-top: clamp(1rem, 3vh, 2rem);
+    }
+
+    &:last-of-type {
+      padding-bottom: clamp(4rem, 10vh, 8rem);
+    }
+
+    // Chapter kicker and heading
+    .chapter-header-group {
+      position: relative;
+      z-index: 1;
+      padding-block: 16px var(--spacer-sm);
+      margin-bottom: var(--spacer-md);
+      border-bottom: 1px solid var(--ui-border-color);
+
+      .chapter-kicker {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 4px;
+        color: var(--chapter-accent);
+
+        .chapter-number {
+          @include bench.pill;
+          background: rgba(var(--chapter-accent-rgb), $tint-bg);
+          border: 1px solid rgba(var(--chapter-accent-rgb), $tint-border);
+          font-family: var(--font-code);
+          letter-spacing: bench.$label-letter-spacing;
+          color: var(--chapter-accent);
+        }
+
+        .chapter-rule {
+          display: inline-block;
+          width: 2rem;
+          height: 1px;
+          background: currentColor;
+          opacity: 0.35;
+        }
+      }
+
+      > .header-wrapper {
+        margin: 0;
+
+        h2 {
+          margin: 0;
+          font-size: var(--font-size-heading-3);
+          font-weight: var(--font-weight-bolder);
+          letter-spacing: -0.01em;
+          color: bench.$heading-color;
+        }
+      }
+    }
+
+    // Chapter body
+    .chapter-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacer-sm);
+      width: 100%;
+
+      > p,
+      > ul,
+      > ol,
+      > blockquote {
+        width: 100%;
+        max-width: $prose-max-width;
+        margin-block: 0 4px;
+      }
+
+      > .table-wrapper {
+        width: 100%;
+        margin-block: 4px 16px;
+      }
+
+      > h3 {
+        font-size: var(--font-size-heading-4);
+        font-weight: var(--font-weight-bold);
+        color: bench.$heading-color;
+        margin-block: var(--spacer-md) 4px;
+      }
+
+      > h4 {
+        font-size: var(--font-size-heading-5);
+        font-weight: var(--font-weight-bold);
+        color: bench.$strong-color;
+        margin-block: 24px 0;
+      }
+
+      > :first-child {
+        margin-top: 0;
+      }
+    }
+  }
+
+  // Heading anchor links, matching article.content in components/_content.scss.
+  .story-chapter .header-wrapper {
+    display: flex;
+    align-items: center;
+
+    .heading-link {
+      margin-left: var(--spacer-sm);
+      font-size: var(--font-size-heading-4);
+      line-height: 1;
+      color: bench.$muted-color;
+      opacity: 0;
+      text-decoration: none;
+      transition: color bench.$transition, opacity bench.$transition;
+
+      &:hover {
+        color: bench.$link-color;
+        text-decoration: none;
+      }
+
+      &:focus {
+        opacity: 1;
+      }
+
+      &:active {
+        color: bench.$link-hover-color;
+      }
+    }
+
+    &:hover .heading-link {
+      opacity: 1;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.flutterbench-methodology section.content .story-chapter {
+    &,
+    .heading-link {
+      transition: none;
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Methodology cards
+// -----------------------------------------------------------------------------
+// Nested under `.chapter-content` to take precedence over the base prose
+// styles in _flutterbench.scss.
+body.flutterbench-methodology section.content .chapter-content {
+  // Plain-text formulas, styled like the leaderboard legend card.
+  > p.formula {
+    @include bench.card-surface;
+    max-width: $prose-max-width;
+    margin-block: 4px 16px;
+    padding: 16px 24px;
+    font-family: var(--font-code);
+    font-size: 14px;
+    line-height: 1.5;
+    color: bench.$heading-color;
+  }
+
+  // Scoring dimensions: one card with a stacked row per dimension.
+  //
+  // Each row is a grid:
+  //   [icon] [title          ] [badge]
+  //   [    ] [body                    ]
+  // The header and footer wrappers use `display: contents` so their
+  // children can be placed directly on the row's grid.
+  .dimension-cards-grid {
+    @include bench.card-surface($shadow: true);
+    width: 100%;
+    margin-block: 4px 16px;
+    overflow: hidden;
+
+    .dimension-card {
+      --dimension-accent: #{bench.$link-color};
+
+      position: relative;
+      display: grid;
+      grid-template-columns: $icon-size minmax(0, 1fr) auto;
+      grid-template-rows: minmax($icon-size, auto) auto;
+      grid-template-areas:
+        'icon title badge'
+        '.    body  body';
+      align-items: center;
+      column-gap: 16px;
+      row-gap: var(--spacer-sm);
+      padding: 20px 24px 20px calc(24px + #{$accent-bar-width});
+
+      & + .dimension-card {
+        border-top: 1px solid var(--ui-border-color);
+      }
+
+      // Accent bar along the leading edge of each row.
+      &::before {
+        content: '';
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 0;
+        width: $accent-bar-width;
+        background-color: var(--dimension-accent);
+      }
+
+      .card-header-row,
+      .card-footer-info {
+        display: contents;
+      }
+
+      .card-icon-wrap {
+        grid-area: icon;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: $icon-size;
+        height: $icon-size;
+        border-radius: var(--ui-border-radius-sm);
+
+        .material-symbols {
+          font-size: var(--font-size-heading-3);
+        }
+      }
+
+      h4 {
+        @include bench.card-title;
+        grid-area: title;
+        margin: 0;
+      }
+
+      .badge {
+        @include bench.pill;
+        grid-area: badge;
+        justify-self: end;
+        white-space: nowrap;
+      }
+
+      // Optional footer text, shown under the body.
+      .card-footer-info > span:not(.badge) {
+        @include bench.label;
+        grid-column: 2 / -1;
+      }
+
+      .card-body {
+        @include _card-body-text;
+        grid-area: body;
+        align-self: start;
+        max-width: $prose-max-width;
+      }
+
+      @each $category in map.keys(bench.$category-colors) {
+        &.#{$category} {
+          --dimension-accent: #{bench.category-color($category, fg)};
+        }
+
+        .card-icon-wrap.#{$category},
+        .badge.#{$category} {
+          @include bench.category-tint($category);
+        }
+      }
+
+      // On narrow screens, stack the badge and let the body span the row.
+      @media (max-width: 600px) {
+        grid-template-columns: $icon-size minmax(0, 1fr);
+        grid-template-rows: minmax($icon-size, auto) auto auto;
+        grid-template-areas:
+          'icon  title'
+          'badge badge'
+          'body  body';
+        padding-inline: 16px;
+        padding-inline-start: calc(16px + #{$accent-bar-width});
+
+        .badge {
+          justify-self: start;
+        }
+      }
+    }
+  }
+
+  // Rollup metric cards, styled like the leaderboard breakdown cards.
+  .rollup-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 12px;
+    width: 100%;
+    margin-block: 4px 16px;
+
+    .rollup-card {
+      @include bench.card-surface;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacer-sm);
+      padding: 16px;
+      box-shadow: bench.$light-card-shadow;
+
+      .rollup-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacer-sm);
+
+        .tag {
+          @include bench.label;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+
+          .material-symbols {
+            font-size: var(--font-size-heading-5);
+          }
+        }
+
+        .math-pill {
+          @include bench.inline-code;
+          margin-left: auto;
+          font-weight: var(--font-weight-bold);
+          white-space: nowrap;
+        }
+      }
+
+      h4 {
+        @include bench.card-title;
+        margin: 0;
+      }
+
+      .card-body {
+        @include _card-body-text;
+
+        p.formula {
+          margin: 0;
+          font-family: var(--font-code);
+          font-size: 13px;
+          color: bench.$heading-color;
+          overflow-wrap: normal;
+        }
+      }
+
+      // Featured card: the leaderboard's hover/selection tint.
+      &.highlight {
+        background: var(--blue-1);
+        border-color: var(--blue-2);
+
+        .rollup-header .math-pill {
+          background: #ffffff;
+        }
+      }
+    }
+  }
+
+  // Experimental table layout for the rollup metrics (title | pill | body).
+  // Tweak the column widths with the custom properties below.
+  // `table-layout: fixed` makes the browser honor them exactly.
+  .rollup-metrics-table {
+    --rollup-col-title-width: 20%;
+    --rollup-col-pill-width: 10%;
+    --rollup-col-body-width: 70%;
+
+    width: 100%;
+    table-layout: fixed;
+
+    td:nth-child(1) {
+      width: var(--rollup-col-title-width);
+      text-align: right;
+    }
+
+    td:nth-child(2) {
+      width: var(--rollup-col-pill-width);
+    }
+
+    td:nth-child(3) {
+      width: var(--rollup-col-body-width);
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Interactive detail card (4-axis evaluation matrix)
+// -----------------------------------------------------------------------------
+// Card surface and tabs match the leaderboard's legend card and
+// Baseline / With AI Tooling segmented toggle.
+body.flutterbench-methodology section.content .chapter-content {
+  .interactive-detail-card {
+    @include bench.card-surface;
+    width: 100%;
+    margin-block: 4px 16px;
+    padding: 20px 24px;
+
+    .card-header-area {
+      margin-bottom: 16px;
+
+      h3 {
+        @include bench.card-title;
+        margin: 0 0 4px;
+      }
+
+      p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.5;
+        color: bench.$text-color;
+      }
+    }
+
+    // Segmented control, like `.bench-variant-toggle` on the leaderboard.
+    .card-tabs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+      gap: 2px;
+      margin-bottom: 16px;
+      padding: 3px;
+      background: var(--grey-2);
+      border: 1px solid var(--ui-border-color);
+      border-radius: var(--ui-border-radius-sm);
+
+      .card-tab-btn {
+        padding: 8px 14px;
+        background: transparent;
+        border: none;
+        border-radius: calc(var(--ui-border-radius-sm) - 2px);
+        font-family: var(--font-ui);
+        text-align: left;
+        color: bench.$text-color;
+        cursor: pointer;
+        transition: all 200ms ease;
+
+        .tab-primary-label {
+          font-size: 13px;
+          font-weight: var(--font-weight-bold);
+        }
+
+        .tab-secondary-label {
+          margin-top: 2px;
+          font-size: 12px;
+          color: bench.$muted-color;
+        }
+
+        &:hover:not(.active) {
+          color: bench.$strong-color;
+        }
+
+        &.active {
+          background: #ffffff;
+          color: bench.$link-color;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+      }
+    }
+
+    // Panel, like the leaderboard drawer's summary cards.
+    .card-panels-container {
+      position: relative;
+      min-height: 220px;
+      padding: 16px 20px;
+      background: var(--grey-1);
+      border: 1px solid var(--ui-border-color);
+      border-radius: var(--ui-border-radius-sm);
+
+      .card-panel {
+        display: none;
+        flex-direction: column;
+        gap: var(--spacer-sm);
+
+        &.active {
+          display: flex;
+        }
+
+        .panel-heading {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: var(--spacer-sm);
+
+          h4 {
+            @include bench.card-title;
+            margin: 0;
+          }
+
+          .panel-badge {
+            @include bench.pill;
+            background: var(--blue-2);
+            color: var(--blue-8);
+            white-space: nowrap;
+          }
+        }
+
+        .panel-overview {
+          margin: 0;
+          font-size: 14px;
+          line-height: 1.6;
+          color: bench.$text-color;
+        }
+
+        .panel-items-section {
+          padding-top: var(--spacer-sm);
+          border-top: 1px solid var(--ui-border-color);
+
+          .items-label {
+            @include bench.label;
+            margin-bottom: 4px;
+          }
+
+          ul {
+            margin: 0;
+            padding-left: 16px;
+
+            li {
+              margin-bottom: 4px;
+              font-size: 14px;
+              line-height: 1.6;
+              color: bench.$text-color;
+
+              &:last-child {
+                margin-bottom: 0;
+              }
+
+              strong {
+                color: bench.$strong-color;
+              }
+
+              code {
+                @include bench.inline-code;
+              }
+            }
+          }
+        }
+
+        .panel-footer-text {
+          margin: var(--spacer-sm) 0 0;
+          font-size: 13px;
+          font-style: italic;
+          line-height: 1.5;
+          color: bench.$text-color;
+        }
+      }
+    }
+  }
+}

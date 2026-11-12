@@ -12,6 +12,10 @@ import 'package:flutter_website/src/components/common/newsletter_form.dart'
     deferred as _newsletter_form;
 import 'package:flutter_website/src/components/common/tabs.dart'
     deferred as _tabs;
+import 'package:flutter_website/src/components/flutterbench/flutterbench_interactive.dart'
+    deferred as _flutterbench_interactive;
+import 'package:flutter_website/src/components/flutterbench/interactive_detail_card.dart'
+    deferred as _interactive_detail_card;
 import 'package:flutter_website/src/components/layout/header.dart'
     deferred as _header;
 import 'package:flutter_website/src/components/pages/consultants_cookie_snack.dart'
@@ -99,6 +103,23 @@ ClientOptions get defaultClientOptions => ClientOptions(
         noSpy: p['noSpy'] as bool,
       ),
       loader: _tabs.loadLibrary,
+    ),
+    'flutterbench_interactive': ClientLoader(
+      (p) => _flutterbench_interactive.FlutterBenchInteractive(
+        rawResultsJson: (p['rawResultsJson'] as Map<String, Object?>),
+      ),
+      loader: _flutterbench_interactive.loadLibrary,
+    ),
+    'interactive_detail_card': ClientLoader(
+      (p) => _interactive_detail_card.InteractiveDetailCard(
+        title: p['title'] as String,
+        description: p['description'] as String,
+        tabs: (p['tabs'] as List<Object?>)
+            .map((i) => (i as Map<String, Object?>))
+            .toList(),
+        classes: p['classes'] as String,
+      ),
+      loader: _interactive_detail_card.loadLibrary,
     ),
     'header': ClientLoader(
       (p) => _header.Header(

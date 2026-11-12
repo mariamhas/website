@@ -17,6 +17,10 @@ import 'package:site_shared/page_extensions.dart';
 import 'main.server.options.dart';
 import 'src/components/common/dash_image.dart';
 import 'src/components/common/image.dart';
+import 'src/components/flutterbench/evaluation_matrix.dart';
+import 'src/components/flutterbench/flutterbench_header.dart';
+import 'src/components/flutterbench/methodology_cards.dart';
+import 'src/components/flutterbench/story_chapter.dart';
 import 'src/extensions/same_page_link_extension.dart';
 import 'src/layouts/blog_layout.dart';
 import 'src/layouts/consultants_tos_layout.dart';
@@ -34,6 +38,7 @@ import 'src/pages/ecosystem_page.dart';
 import 'src/pages/embedded_page.dart';
 import 'src/pages/events_page.dart';
 import 'src/pages/flip_page.dart';
+import 'src/pages/flutterbench_page.dart';
 import 'src/pages/games_page.dart';
 import 'src/pages/google_integrations_page.dart';
 import 'src/pages/home_page.dart';
@@ -130,6 +135,23 @@ void main() {
           defineComponent('FlipPage', const FlipPage()),
           defineComponent('NewsPage', const NewsPage()),
           defineComponent('WhyFlutterPage', const WhyFlutterPage()),
+          defineComponentWithChild(
+            'FlutterBenchPage',
+            FlutterBenchPage.fromAttrs,
+          ),
+          defineComponentWithAttrs(
+            'FlutterBenchHeader',
+            FlutterBenchHeader.fromAttrs,
+          ),
+          defineComponentWithChild('StoryChapter', StoryChapter.fromAttrs),
+          defineComponentWithChild(
+            'ScoreDimensions',
+            ScoreDimensions.fromAttrs,
+          ),
+          defineComponentWithChild('DimensionCard', DimensionCard.fromAttrs),
+          defineComponentWithChild('RollupMetrics', RollupMetrics.fromAttrs),
+          defineComponentWithChild('RollupCard', RollupCard.fromAttrs),
+          defineComponent('EvaluationMatrix', const EvaluationMatrix()),
           defineComponentWithAttrs('Image', Image.fromAttrs),
 
           CustomComponent(
@@ -154,12 +176,14 @@ void main() {
 }
 
 /// Builds the `package:markdown` document used to parse this site's content,
-/// adding [MermaidBlockSyntax] on top of the parser's default block syntaxes
-/// so `MermaidProcessor` has diagrams to transform.
+/// adding [MermaidBlockSyntax] (so `MermaidProcessor` has diagrams to
+/// transform) and [AlertBlockSyntax] (for `:::note`-style alerts) on top of
+/// the parser's default block syntaxes.
 md.Document _buildMarkdownDocument(Page page) => md.Document(
   blockSyntaxes: [
     ...MarkdownParser.defaultBlockSyntaxes,
     const MermaidBlockSyntax(),
+    const AlertBlockSyntax(),
   ],
   extensionSet: md.ExtensionSet.gitHubWeb,
 );

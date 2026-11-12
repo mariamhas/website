@@ -10,6 +10,10 @@ import 'package:flutter_website/src/components/common/carousel.dart'
 import 'package:flutter_website/src/components/common/newsletter_form.dart'
     as _newsletter_form;
 import 'package:flutter_website/src/components/common/tabs.dart' as _tabs;
+import 'package:flutter_website/src/components/flutterbench/flutterbench_interactive.dart'
+    as _flutterbench_interactive;
+import 'package:flutter_website/src/components/flutterbench/interactive_detail_card.dart'
+    as _interactive_detail_card;
 import 'package:flutter_website/src/components/layout/header.dart' as _header;
 import 'package:flutter_website/src/components/pages/consultants_cookie_snack.dart'
     as _consultants_cookie_snack;
@@ -71,6 +75,16 @@ ServerOptions get defaultServerOptions => ServerOptions(
     _newsletter_form.NewsletterForm:
         ClientTarget<_newsletter_form.NewsletterForm>('newsletter_form'),
     _tabs.Tabs: ClientTarget<_tabs.Tabs>('tabs', params: __tabsTabs),
+    _flutterbench_interactive.FlutterBenchInteractive:
+        ClientTarget<_flutterbench_interactive.FlutterBenchInteractive>(
+          'flutterbench_interactive',
+          params: __flutterbench_interactiveFlutterBenchInteractive,
+        ),
+    _interactive_detail_card.InteractiveDetailCard:
+        ClientTarget<_interactive_detail_card.InteractiveDetailCard>(
+          'interactive_detail_card',
+          params: __interactive_detail_cardInteractiveDetailCard,
+        ),
     _header.Header: ClientTarget<_header.Header>(
       'header',
       params: __headerHeader,
@@ -164,6 +178,17 @@ Map<String, Object?> __tabsTabs(_tabs.Tabs c) => {
   'header': c.header?.toId(),
   'tabs': c.tabs.map((i) => i.toMap()).toList(),
   'noSpy': c.noSpy,
+};
+Map<String, Object?> __flutterbench_interactiveFlutterBenchInteractive(
+  _flutterbench_interactive.FlutterBenchInteractive c,
+) => {'rawResultsJson': c.rawResultsJson};
+Map<String, Object?> __interactive_detail_cardInteractiveDetailCard(
+  _interactive_detail_card.InteractiveDetailCard c,
+) => {
+  'title': c.title,
+  'description': c.description,
+  'tabs': c.tabs,
+  'classes': c.classes,
 };
 Map<String, Object?> __headerHeader(_header.Header c) => {
   'contrastLogoSrc': c.contrastLogoSrc,
