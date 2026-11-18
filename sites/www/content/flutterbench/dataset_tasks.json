@@ -1,0 +1,102 @@
+{
+  "tasks": [
+    {
+      "id": "SHT-01",
+      "name": "Fix Layout Overflows",
+      "cuj": "overflow-bug",
+      "developer_request": "Fix a layout overflow error that appears on smaller screens.",
+      "evaluates": "Diagnosing and fixing layout issues in an existing app."
+    },
+    {
+      "id": "SHT-02",
+      "name": "Adapt to Material and Cupertino",
+      "cuj": "adaptive-material-cupertino",
+      "developer_request": "Make an Android-first app feel native on iOS and desktop.",
+      "evaluates": "Building adaptive UIs that follow each platform's conventions."
+    },
+    {
+      "id": "SHT-03",
+      "name": "Fetch Data from a REST API",
+      "cuj": "-",
+      "developer_request": "Replace an app's hard-coded data with data from a REST API.",
+      "evaluates": "Networking, data modeling, and handling network failures."
+    },
+    {
+      "id": "SHT-04",
+      "name": "Manage State with Provider",
+      "cuj": "manage-state-with-provider",
+      "developer_request": "Add a feature with state that's shared across screens, using `provider`.",
+      "evaluates": "Managing app state with `provider`."
+    },
+    {
+      "id": "SHT-05",
+      "name": "Add Firebase Storage Photos",
+      "cuj": "firebase-storage",
+      "developer_request": "Let users manage their own photos, stored in Firebase.",
+      "evaluates": "Integrating Firebase Storage into an app."
+    },
+    {
+      "id": "SHT-06",
+      "name": "Persist Sessions with Secure Storage",
+      "cuj": "-",
+      "developer_request": "Keep users signed in between app launches.",
+      "evaluates": "Storing sensitive data securely on the device."
+    },
+    {
+      "id": "SHT-07",
+      "name": "Build an AI Backend with Genkit Dart",
+      "cuj": "-",
+      "developer_request": "Build an AI-powered backend endpoint in Dart with Genkit.",
+      "evaluates": "Building server-side AI features with Genkit Dart."
+    },
+    {
+      "id": "SHT-08",
+      "name": "Add Unit, Widget, and Integration Tests",
+      "cuj": "add-unit-widget-integration-tests",
+      "developer_request": "Add tests to an untested feature.",
+      "evaluates": "Writing effective unit, widget, and integration tests."
+    },
+    {
+      "id": "SHT-09",
+      "name": "Add Localization",
+      "cuj": "add-localization",
+      "developer_request": "Translate an app into more languages.",
+      "evaluates": "Internationalizing and localizing a Flutter app."
+    },
+    {
+      "id": "SHT-10",
+      "name": "Add Web Support",
+      "cuj": "add-web-support",
+      "developer_request": "Bring a mobile-only app to the web.",
+      "evaluates": "Adapting an existing app to work well in the browser."
+    },
+    {
+      "id": "SHT-11",
+      "name": "Add Deep Links with go_router",
+      "cuj": "-",
+      "developer_request": "Make links from outside the app open the right screen.",
+      "evaluates": "Navigation and deep linking with `go_router`."
+    },
+    {
+      "id": "SHT-12",
+      "name": "Persist the Cart with shared_preferences",
+      "cuj": "-",
+      "developer_request": "Keep a user's cart on the device between app launches.",
+      "evaluates": "Persisting app data locally with `shared_preferences`."
+    },
+    {
+      "id": "SHT-13",
+      "name": "Add Firebase Authentication",
+      "cuj": "-",
+      "developer_request": "Add Firebase sign-in to an app.",
+      "evaluates": "Adding authentication and restricting parts of an app to signed-in users."
+    },
+    {
+      "id": "LHT-01",
+      "name": "Build a Greenfield Fitness App",
+      "cuj": "greenfield-fitness-app",
+      "developer_request": "Build a complete fitness app from a product spec.",
+      "evaluates": "End-to-end app development over many turns, from project structure through architecture, UI, and data."
+    }
+  ]
+}

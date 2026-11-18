@@ -78,29 +78,26 @@ the CUJ list.
 
 ### Dataset
 
-The dataset includes the following tasks:
+The following table shows two example tasks from the dataset.
+For each task, **Developer request** summarizes
+what a developer asks the agent to do,
+and **What we evaluate** describes what the task grades
+and, where relevant, what's out of scope.
 
-| Name | CUJ | Description |
-|---|---|---|
-| Fix Layout Overflows | `overflow-bug` | Diagnose the root cause of layout overflow errors and refactor the layout with flexible, scrolling, or bounding widgets to resolve them. |
-| Manage State with Provider | `manage-state-with-provider` | Implement application state management using `package:provider` for dependency injection and reactive updates. |
-| Add Localization | `add-localization` | Configure supported languages and locales using standard Flutter internationalization with ARB files and generated localization delegates. |
-| Adapt to Material and Cupertino | `adaptive-material-cupertino` | Implement navigation layouts that adaptively render Material Design components on Android and Cupertino components on iOS. |
-| Add Web Support | `add-web-support` | Extend an existing application to run on the web, auditing feature and plugin compatibility and scaffolding the platform with official commands. |
-| Add Unit, Widget, and Integration Tests | `add-unit-widget-integration-tests` | Achieve comprehensive test coverage with unit, widget, and end-to-end integration test suites using `package:integration_test`. |
-| Add Firebase Storage Photos | `firebase-storage` | Integrate `package:firebase_storage` and implement flows to upload, download, and delete photos in cloud storage. |
-| Build a Greenfield Fitness App | `greenfield-fitness-app` | Create a new cross-platform Flutter fitness application from scratch, spanning many CUJs across architecture, UI, and data. |
+<DatasetTable limit="2" />
+
+To review every task the dataset currently includes,
+visit the [Dataset](/flutterbench/dataset) page.
 
 </StoryChapter>
 
 <StoryChapter number="03" title="Grading and scoring design" id="grading-scoring-design">
 
-We run each task *K* independent times,
+We run each task several independent times,
 each from a clean workspace,
 to account for nondeterministic model output.
-The value of *K* can increase between leaderboard snapshots.
-The leaderboard's Pass@*K* column shows
-the value used for the current snapshot.
+The number of trials can vary between tasks and snapshots,
+so the leaderboard uses metrics that don't depend on it.
 
 ### Two-dimension evaluation rubric
 
@@ -166,29 +163,43 @@ Three complementary verification tiers assign grades:
 
 ### Rollup metrics
 
-The leaderboard aggregates task-level trials into three primary metrics:
+The leaderboard aggregates task-level trials into these metrics:
 
 <div class="table-wrapper">
 <table class="rollup-metrics-table">
   <tbody>
     <tr>
-      <td><strong>Pass Rate (%)</strong></td>
-      <td><code>pass^K</code></td>
-      <td>Pass Rate = (Tasks where all <em>K</em> trials passed ÷ Total Tasks) × 100</td>
-    </tr>
-    <tr>
-      <td><strong>Pass@<em>K</em> Rate (%)</strong></td>
-      <td><code>pass@K</code></td>
-      <td>Pass@<em>K</em> = (Tasks with at least 1 of <em>K</em> trials passed ÷ Total Tasks) × 100</td>
-    </tr>
-    <tr>
       <td><strong>Average Score (%)</strong></td>
       <td><code>± SD</code></td>
       <td>Average Score = (Sum of Task Result Scores ÷ Total Tasks) × 100 (± Standard Deviation)</td>
     </tr>
+    <tr>
+      <td><strong>Pass@1 (%)</strong></td>
+      <td><code>pass@1</code></td>
+      <td>Pass@1 = (Sum over tasks of (Passed Trials ÷ Trials Run) ÷ Total Tasks) × 100</td>
+    </tr>
+    <tr>
+      <td><strong>Pass Rate (%)</strong></td>
+      <td><code>pass^K</code></td>
+      <td>Pass Rate = (Tasks where every trial passed ÷ Total Tasks) × 100</td>
+    </tr>
+    <tr>
+      <td><strong>Pass@<em>K</em> Rate (%)</strong></td>
+      <td><code>pass@K</code></td>
+      <td>Pass@<em>K</em> = (Tasks where at least one trial passed ÷ Total Tasks) × 100</td>
+    </tr>
   </tbody>
 </table>
 </div>
+
+A trial passes only when its Result Score is `1.0`,
+meaning both Outcome and Quality are perfect.
+Pass@1 estimates the share of tasks a model passes on a single attempt.
+Because it averages each task's own pass rate,
+it stays comparable when tasks run different numbers of trials.
+Pass Rate and Pass@*K* depend on how many trials each task ran:
+fewer trials make Pass Rate easier to reach and Pass@*K* harder.
+The leaderboard ranks models by Average Score by default.
 
 </StoryChapter>
 
